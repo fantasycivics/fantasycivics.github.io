@@ -10,9 +10,9 @@ let livereload = require('gulp-livereload');
 let sass = require('gulp-sass');
 let moduleimporter = require('sass-module-importer');
 
-gulp.task('build', function(){
+gulp.task('build-js', function(){
 	let files = [
-		//{file: 'main', src: 'src/js', dest: 'public/js'},
+		{file: 'main', src: 'src/js', dest: 'public/js'}
 	];
 	return merge(files.map(function(fileData){
 		let file = fileData.file;
@@ -31,8 +31,8 @@ gulp.task('build', function(){
 	}));
 });
 
-gulp.task('sass', function(){
-	return gulp.src('./src/scss/styles.sass')
+gulp.task('build-sass', function(){
+	return gulp.src('./src/sass/styles.sass')
 		.pipe(sourcemaps.init())
 		.pipe(sass({
 			importer: moduleimporter()
