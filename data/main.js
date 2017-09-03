@@ -55,24 +55,31 @@ let getOCD = (queryStr) => {
 	});
 }
 
-let getOCDFull = (queryStr, queryPage, fullReply) => {
-	let page = queryPage || 1;
+let getOCDFull = (queryStr, queryPageList, fullReply) => {
+	let page = [1];
+	if (queryPageList) {
+		if (queryPageList.length == 2) {
+			page = queryPageList;
+		}
+	}
 	let list = fullReply || [];
-	let fullQuery = queryStr + '&page=' + page;
+	let fullQuery = queryStr + '&page=' + page[0];
 	return new Promise((resolve, reject) => {
 		request(`${API_URL}${fullQuery}`, (error, response, body) => {
 			if (error) {
 				reject(error);
 			} else {
 				let res = JSON.parse(body);
+				let isLastPage = page[1] ? res.meta.page === page[1] : false;
 				list.push.apply(list, res.results);
 				console.log(res.meta.page + '/' + res.meta.max_page)
-				if(res.meta.page === res.meta.max_page){
+				if(res.meta.page === res.meta.max_page || isLastPage){
 					resolve(list);
 				}
 				else{
 					let nextPage = res.meta.page + 1;
-					getOCDFull(queryStr, nextPage, list).then(resolve).catch(reject);
+					page[0] = nextPage;
+					getOCDFull(queryStr, page, list).then(resolve).catch(reject);
 				}
 			}
 		});
@@ -106,9 +113,10 @@ let voteURL = 'votes?organization__id=ocd-organization/ef168607-9135-4177-ad8e-c
 	voteURL += '&start_date__contains=2017-07'
 	voteURL += '&sort=start_date'
 
-let startOnPage = 5; // Total: 6 pages for July 2017 records
+let startOnPage = 4; // Total: 6 pages for July 2017 records
+let endOnPage = 4;
 
-getOCDFull(voteURL, startOnPage).then(res => {
+getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
 
 	let output = [];
 
@@ -161,6 +169,8 @@ getOCDFull(voteURL, startOnPage).then(res => {
 
 		//console.logSoftly(output);
 		//console.log(aldMap)
+
+		console.log(`Found ${output.length} records.`);
 
 		saveOutput('july_test', output).then(done => {
 			console.log(`Saved ${output.length} records to Firebase.`);
