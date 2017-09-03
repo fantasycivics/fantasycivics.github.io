@@ -1,7 +1,11 @@
-html, body {
+html, body, .vex-content {
 	font-family: "Roboto", sans-serif !important;
 }
 
 .title {
 	font-weight: bold !important;
+}
+
+.vex.vex-theme-plain .vex-dialog-button.vex-dialog-button-primary {
+	background: #2c8c99;
 }
