@@ -1,0 +1,36 @@
+{
+  "name": "fantasycivics.github.io",
+  "version": "0.0.0",
+  "description": "A fantasy sports-style game about Chicago city politics.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fantasycivics/fantasycivics.github.io.git"
+  },
+  "author": "Vinesh Kannan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fantasycivics/fantasycivics.github.io/issues"
+  },
+  "homepage": "https://github.com/fantasycivics/fantasycivics.github.io#readme",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "browserify": "^14.4.0",
+    "bulma": "^0.5.0",
+    "firebase": "^4.2.0",
+    "gulp": "^3.9.1",
+    "gulp-livereload": "^3.8.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-uglify": "^3.0.0",
+    "merge-stream": "^1.0.1",
+    "prometheusjs": "^1.6.5",
+    "sass-module-importer": "^1.4.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
