@@ -28,6 +28,7 @@
 		<link rel="stylesheet" href="../public/css/main.css">
 
 		<script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
 	</head>
 	<body>
 		<section class="hero is-primary is-bold">
@@ -54,8 +55,8 @@
 			<div class="hero-body">
 				<div class="container">
 					<div class="content has-text-centered">
-						<h1 class="title is-1">Let's Play Fantasy Civics</h1>
-						<h2 class="subtitle is-3">Start creating your roster below.</h2>
+						<h1 class="title is-2">Let's Play Fantasy Civics</h1>
+						<h2 class="subtitle is-4">Start creating your roster below.</h2>
 					</div>
 				</div>
 			</div>
@@ -63,9 +64,17 @@
 		<section class="section">
 			<div class="content">
 				<h1 class="title">The League</h1>
-				<p class="subtitle">Here are the 50 alders.</p>
+				<p class="subtitle">Here are the 50 alders on the Chicago City Council.</p>
+				<div id="alders-table" class="table-holder"></div>
 			</div>
 		</section>
+
+		<!-- Sortable Assets -->
+		<script type="text/javascript" src="../public/sortable/install.js"></script>
+		<script type="text/javascript" src="../public/sortable/sortable.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="../public/sortable/sortable-theme-bootstrap.css">
+
+		<!-- Roster Scripts -->
 		<script type="text/javascript" src="../public/js/aldermen.js"></script>
 		<script type="text/javascript" src="../public/js/main.js"></script>
 	</body>
