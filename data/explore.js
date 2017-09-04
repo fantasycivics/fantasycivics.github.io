@@ -12,8 +12,8 @@ let DatabaseFirebase = firebase.initializeApp(config, 'Fantasy Civics Scraper');
 let db = DatabaseFirebase.database();
 
 const TIME_RANGE = [
-	new Date('7/1/2017').getTime(),
-	new Date('8/1/2017').getTime()	
+	new Date('8/1/2017').getTime(),
+	new Date('9/1/2017').getTime()	
 ];
 
 const DATASETS_311 = [
@@ -24,14 +24,17 @@ const DATASETS_311 = [
 
 cleanAllData().then((aldMap) => {
 	let promises = [];
+	let entries = [];
 	let midPointTimestamp = Math.round((0.5) * (TIME_RANGE[1] + TIME_RANGE[0]));
 	for (let pid in aldMap) {
 		let entry = aldMap[pid];
 			entry.playerid = pid;
 			entry.timestamp = midPointTimestamp;
+		entries.push(entries);
 		/*let p = db.ref(`player_scores`).push(entry);
 		promises.push(p);*/
 	}
+	console.log(`Prepared ${entries.length} records.`);
 	Promise.all(promises).then((done) => {
 		console.log(`Saved ${done.length} records to Firebase.`);
 	}).catch(console.error);
