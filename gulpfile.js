@@ -41,9 +41,9 @@ gulp.task('build-sass', function(){
 		.pipe(gulp.dest('./public/css'));
 });
 
-gulp.task('watch', ['build'], function(){
+gulp.task('watch-js', ['build-js'], function(){
 	livereload.listen();
-	gulp.watch('./src/js/*.js', ['build']);
+	gulp.watch('./src/js/*.js', ['build-js']);
 });
 
-gulp.task('default', ['build', 'watch']);
+gulp.task('default', ['build-js', 'watch-js']);

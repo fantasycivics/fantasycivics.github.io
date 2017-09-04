@@ -105,6 +105,9 @@ function cleanCityCouncilData(val) {
 				return value;
 			}).sort((a, b) => {
 				return a.timestamp - b.timestamp;
+			}).filter((vote) => {
+				let isInRange = (vote.timestamp > TIME_RANGE[0]) && (vote.timestamp < TIME_RANGE[1]);
+				return isInRange;
 			});
 
 			let types = {};
