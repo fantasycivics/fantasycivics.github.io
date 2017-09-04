@@ -45,6 +45,13 @@ let Views = () => {
 
 		getAlderView: (model) => {
 			let html = `
+			`;
+			if (model.title) {
+				html += `
+					<p class="title is-3">${model.title}</p>
+				`;
+			}
+			html += `
 				<div class="media">
 					<div class="media-left">
 						<figure class="image is-64x64 headshot-holder">
@@ -59,6 +66,8 @@ let Views = () => {
 						</p>
 					</div>
 				</div>
+				<hr>
+				<p class="title is-5">Points Breakdown</p>
 				<table class="table is-fullwidth">
 					<thead>
 						<tr>
@@ -108,7 +117,12 @@ let Views = () => {
 			model.rows.forEach((row) => {
 				html += `
 					<tr>
-						<td>${row.code}</td>
+						<td>
+							<span>${row.code}</span>
+							<span data-positionkey="${row.position}" class="icon is-small helper-icon">
+								<i class="fa fa-question-circle"></i>
+							</span>
+						</td>
 						<td>
 							<span class="is-inline-img">
 								<figure class="image is-32x32 headshot-holder is-rounded">
@@ -147,7 +161,7 @@ let Views = () => {
 				<tbody>
 					<tr>
 						<td>
-							<h3 class="title tag is-transparent">Total Score</h3>
+							<h3 class="title tag is-transparent is-not-padded">Total Score</h3>
 						</td>
 						<td>
 							<h3 class="title tag is-primary">${model.total}</h3>
@@ -201,6 +215,66 @@ let Views = () => {
 				table.classList.add('is-fullwidth');
 			let div = document.createElement('div');
 				div.appendChild(table);
+			return div;
+		},
+
+		getShareView: (model) => {
+			let tweetLink = `https://twitter.com/home?status=Check%20out%20my%20%23FantasyCivics%20team%20at%20https%3A//fantasycivics.github.io/game/?roster=${model.hash}%20%40chihacknight`;
+			let copyLink = `https://fantasycivics.github.io/game/?roster=${model.hash}`;
+			let html = `
+				<div class="content">
+					<h2 class="title">Share Your Roster!</h2>
+					<p class="subtitle">Tweet or copy this link to save your team. Share it with your friends and come back next month to see how well your team did!</p>
+					<a href="${tweetLink}" target="_blank" class="button is-info is-outlined">
+						<span class="icon">
+							<i class="fa fa-twitter"></i>
+						</span>
+						<span>Tweet Link</span>	
+					</a>
+					<button class="button is-primary is-outlined" data-clipboard-text="${copyLink}">
+						<span class="icon">
+							<i class="fa fa-link"></i>
+						</span>
+						<span>Copy Link</span>				
+					</button>
+				</div>
+			`;
+			let div = document.createElement('div');
+				div.innerHTML = html;
+			return div;
+		},
+
+		getPositionExplanation: (model) => {
+			let html = `
+				<div class="content">
+					<h2 class="title">${model.details.title} <span class="tag is-warning">${model.details.code}</span></h2>
+					<p class="subtitle">${model.details.description}</p>
+					<hr>
+					<p class="title is-5">Scoring Overview</p>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Category</th>
+								<th>Points</th>
+							</tr>
+						</thead>
+						<tbody>
+			`;
+			model.fields.forEach((field) => {
+				html += `
+					<tr>
+						<td>${model.titles[field]}</td>
+						<td>${model.weights[field] > 0 ? '+' : ''}${model.weights[field]}</td>
+					</tr>
+				`;
+			});
+			html += `
+						</tbody>
+					</table>
+				</div>
+			`;
+			let div = document.createElement('div');
+				div.innerHTML = html;
 			return div;
 		}
 

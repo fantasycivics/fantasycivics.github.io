@@ -11,24 +11,27 @@
 
 		<meta property="og:title" content="Fantasy Civics">
 		<meta property="og:description" content="A fantasy sports-style game about Chicago city politics.">
-		<meta property="og:image" content="../public/img/tile-color.png">
+		<meta property="og:image" content="https://fantasycivics.github.io/public/img/tile-color.png">
         <!--<meta property="fb:app_id" content="1538554079792604">-->
 
-		<link rel="icon" sizes="192x192" href="../favicon.io">
-		<link rel="image_src" href="../public/img/tile-color.png">
-        <!--<link rel="manifest" href="../manifest.webapp">-->
+		<link rel="icon" sizes="192x192" href="https://fantasycivics.github.io/favicon.ico">
+		<link rel="image_src" href="https://fantasycivics.github.io/public/img/tile-color.png">
+        <!--<link rel="manifest" href="./manifest.webapp">-->
 
 		<script type="text/javascript" src="../public/vex/vex.combined.min.js"></script>
 		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
 		<link rel="stylesheet" type="text/css" href="../public/vex/vex.css">
 		<link rel="stylesheet" type="text/css" href="../public/vex/vex-theme-plain.css">
 
+		<script src="https://use.fontawesome.com/c32bc59f9b.js"></script>
 		<link href="https://fonts.googleapis.com/css?family=Roboto:400,900" rel="stylesheet">
 		<link rel="stylesheet" href="../public/css/styles.css">
 		<link rel="stylesheet" href="../public/css/main.css">
 
 		<script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+		<script type="text/javascript" src="../public/js/moment.min.js"></script>
 		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
 	</head>
 	<body>
 		<section class="hero is-primary is-bold">
@@ -47,7 +50,7 @@
 						</span>
 						<div class="nav-right nav-menu">
 							<a class="nav-item">Contact</a>
-							<a class="nav-item">Sign Up</a>
+							<a href="../" class="nav-item">Home</a>
 						</div>
 					</div>
 				</header>
@@ -73,14 +76,23 @@
 		<section data-section="roster" class="section is-single">
 			<div class="content">
 				<h1 class="title">Your Roster</h1>
-				<div id="roster-table" class="table-holder"></div>
+				<p class="subtitle">Choose a team of five alders. Click on a position to see how they are scored.</p>
+				<div id="roster-table" class="table-holder">
+					<p class="has-text-centered">Loading...</p>
+				</div>
+				<div class="is-grouped has-text-centered">
+					<button id="share-roster" class="button is-primary">Share Roster</button>
+					<a href="https://docs.google.com/forms/d/e/1FAIpQLSeFH9lBX_vcjX11SFDzjJZ73maJX36lPOFGLnZfYLHTdfcQYA/viewform" target="_blank" class="button is-primary is-outlined">Get Updates</a>
+				</div>
 			</div>
 		</section>
 		<section data-section="players" class="section is-single">
 			<div class="content">
 				<h1 class="title">The Players</h1>
 				<p class="subtitle">Here are the 50 alders on the Chicago City Council.</p>
-				<div id="alders-table" class="table-holder"></div>
+				<div id="alders-table" class="table-holder">
+					<p class="has-text-centered">Loading...</p>
+				</div>
 			</div>
 		</section>
 

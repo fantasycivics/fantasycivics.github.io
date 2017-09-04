@@ -15,6 +15,10 @@ html, body, .vex-content {
 	width: 500px !important;
 }
 
+.is-bold {
+	font-weight: bold !important;
+}
+
 .is-hidden {
 	display: none;
 }
@@ -59,4 +63,13 @@ html, body, .vex-content {
 
 .table.is-right {
 	float: right;
+}
+
+.tag.is-not-padded {
+	padding: 0 !important;
+}
+
+.helper-icon:hover {
+	cursor: pointer;
+	color: #2c8c99 !important;
 }

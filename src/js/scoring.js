@@ -20,8 +20,8 @@ let Scoring = () => {
 	};
 
 	const TITLE = {
-		absent: 'Absent',
-		contrarian: 'Vote Against Mayor',
+		absent: 'Absent for Vote',
+		contrarian: 'Vote Against a Mayor-sponsored Bill',
 		win: 'Won Vote',
 		lose: 'Lost Vote',
 		pass: 'Passed Bill',
@@ -93,6 +93,7 @@ let Scoring = () => {
 		DATASETS_311: DATASETS_311,
 		WEIGHT: WEIGHT,
 		TITLE: TITLE,
+		POSITION_SCORE: POSITION_SCORE,
 		getScoreBreakdown: getScoreBreakdown,
 		getScorePoints: getScorePoints,
 		getScore: getScore

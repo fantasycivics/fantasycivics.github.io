@@ -21,6 +21,35 @@ let dEnd = new Date(now.getUTCFullYear(), now.getUTCMonth()).getTime();
 
 const TIME_RANGE = [dStart, dEnd];
 
+const ROSTER_ORDER = ['captain', 'council1', 'council2', 'graffiti', 'rodents'];
+const POSITION_DETAILS = {
+	captain: {
+		title: 'Captain',
+		code: 'CAPT',
+		description: 'Earns points for all Alder-ly activities.'
+	},
+	council1: {
+		title: 'Councilperson',
+		code: 'COUN',
+		description: 'Earns points for activity in City Council meetings.'
+	},
+	council2: {
+		title: 'Councilperson',
+		code: 'COUN',
+		description: 'Earns points for activity in City Council meetings.'
+	},
+	graffiti: {
+		title: 'Graffiti Buster',
+		code: 'GRAF',
+		description: 'Earns points for fulfilling graffiti abatement 311 requests.'
+	},
+	rodents: {
+		title: 'Rodent Warrior',
+		code: 'RDNT',
+		description: 'Earns points for fulfilling rodent baiting 311 requests.'
+	}
+};
+
 console.log(TIME_RANGE)
 
 let PARAMS = getQueryParams(document.location.search);
@@ -28,21 +57,42 @@ if (PARAMS.tab) {
 	showSection(PARAMS.tab);	
 }
 
-let myRoster = {
-	captain: false,
-	council1: false,
-	council2: false,
-	graffiti: false,
-	rodents: false
-};
-
 let tabs = Array.from(document.querySelector('#tabs-main').children);
-	tabs.forEach((tab) => {
-		tab.addEventListener('click', (e) => {
-			let tabName = tab.dataset.tab;
-			showSection(tabName);
+tabs.forEach((tab) => {
+	tab.addEventListener('click', (e) => {
+		let tabName = tab.dataset.tab;
+		showSection(tabName);
+	});
+});
+
+const ALPHABET = ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split('');
+
+document.querySelector('#share-roster').addEventListener('click', (e) => {
+	let roster = getMyRoster();
+	let hash = getHashFromRoster(roster);
+	let shareView = views.getShareView({
+		hash: hash
+	});
+	let shareVex = vex.dialog.alert({
+		unsafeMessage: shareView.innerHTML,
+		buttons: []
+	});
+	let copyLink = `https://fantasycivics.github.io/game/?roster=${hash}`;
+	let copyTarget = shareVex.contentEl.querySelector('[data-clipboard-text]');
+	let clipboard = new Clipboard(copyTarget);
+	clipboard.on('success', (e) => {
+		shareVex.close();
+		vex.dialog.alert('Copied roster link!');
+	});
+	clipboard.on('error', (e) => {
+		shareVex.close();
+		vex.dialog.prompt({
+			message: `Copy your link below:`,
+			value: copyLink,
+			callback: () => {}
 		});
 	});
+});
 
 let ref = db.ref(`player_scores`);
 let query = ref.orderByChild('timestamp').startAt(TIME_RANGE[0]).endAt(TIME_RANGE[1]);
@@ -62,10 +112,13 @@ query.once('value', (snap) => {
 		aldMap[pid] = data;
 	});
 
-	console.log(aldMap);
+	if (PARAMS.roster) {
+		let roster = getRosterFromHash(PARAMS.roster);
+		setMyRoster(roster);
+	}
 
 	showSection('roster');
-	renderRoster(myRoster, aldMap);
+	renderRoster(getMyRoster(), aldMap);
 
 	let rows = playerNodes.sort((a, b) => {
 		return 0;
@@ -94,12 +147,14 @@ query.once('value', (snap) => {
 		button.addEventListener('click', (e) => {
 			let playerid = button.dataset.playerid;
 			let player = PLAYER_MAP[playerid];
-			let freeAgent = isFreeAgent(myRoster, playerid);
+			let freeAgent = isFreeAgent(getMyRoster(), playerid);
 			let data = aldMap[playerid];
 			let breakdown = scorer.getScoreBreakdown(data);
 			let points = scorer.getScorePoints(breakdown);
 			let score = scorer.getScore(points);
+			let month = moment(data.timestamp).format('MMMM YYYY');
 			let alderView = views.getAlderView({
+				title: `${month} Scouting Report`,
 				playerid: playerid,
 				profile: player,
 				breakdown: breakdown,
@@ -115,11 +170,11 @@ query.once('value', (snap) => {
 					text: 'Add To Roster',
 					className: 'vex-dialog-button-primary',
 					click: (e) => {
-						let copyRoster = copyObject(myRoster);
+						let copyRoster = getMyRoster();
 						addPlayerToRoster(copyRoster, playerid, aldMap).then((newRoster) => {
 							if (newRoster) {
-								myRoster = newRoster;
-								renderRoster(myRoster, aldMap);
+								let showRoster = setMyRoster(newRoster);
+								renderRoster(showRoster, aldMap);
 								showSection('roster');
 							}
 						}).catch(console.error);
@@ -142,18 +197,7 @@ query.once('value', (snap) => {
 		});
 	});
 
-	renderRoster(myRoster, aldMap);
-
 });
-
-const ROSTER_ORDER = ['captain', 'council1', 'council2', 'graffiti', 'rodents'];
-const POSITION_CODE = {
-	captain: 'CPTN',
-	council1: 'CNCL',
-	council2: 'CNCL',
-	graffiti: 'GRAF',
-	rodents: 'RDNT'
-};
 
 function getRosterRows(roster, aldMap) {
 	return ROSTER_ORDER.map((pos) => {
@@ -167,7 +211,7 @@ function getRosterRows(roster, aldMap) {
 			return {
 				playerid: pid,
 				position: pos,
-				code: POSITION_CODE[pos],
+				code: POSITION_DETAILS[pos].code,
 				name: player.name,
 				ward: player.ward,
 				lastMonth: score
@@ -176,7 +220,7 @@ function getRosterRows(roster, aldMap) {
 			return {
 				playerid: false,
 				position: pos,
-				code: POSITION_CODE[pos],
+				code: POSITION_DETAILS[pos].code,
 				name: '---',
 				ward: '---',
 				lastMonth: 0
@@ -209,8 +253,8 @@ function renderRoster(roster, aldMap) {
 					break;
 				case 'drop':
 					roster[position] = false;
-					myRoster = roster;
-					renderRoster(myRoster);
+					let newRoster = setMyRoster(roster);
+					renderRoster(newRoster, aldMap);
 					break;
 				case 'view':
 					let player = PLAYER_MAP[playerid];
@@ -218,18 +262,52 @@ function renderRoster(roster, aldMap) {
 					let breakdown = scorer.getScoreBreakdown(data);
 					let points = scorer.getScorePoints(breakdown, position);
 					let score = scorer.getScore(points);
+					let playerTitle = POSITION_DETAILS[position].title;
 					let alderView = views.getAlderView({
+						title: playerTitle,
 						playerid: playerid,
 						profile: player,
 						breakdown: breakdown,
 						points: points,
 						score: score,
 						titles: scorer.TITLE,
-						isFreeAgent: isFreeAgent(myRoster, playerid)
+						isFreeAgent: isFreeAgent(getMyRoster(), playerid)
 					});
 					let alderVex = vex.dialog.alert({
 						unsafeMessage: alderView.innerHTML,
 						buttons: [
+							{
+								type: 'button',
+								text: 'View All Points',
+								className: 'vex-dialog-button-primary',
+								click: (e) => {
+									let fullPoints = scorer.getScorePoints(breakdown);
+									let fullScore = scorer.getScore(fullPoints);
+									let month = moment(data.timestamp).format('MMMM YYYY');
+									let fullView = views.getAlderView({
+										title: `${month} Scouting Report`,
+										playerid: playerid,
+										profile: player,
+										breakdown: breakdown,
+										points: fullPoints,
+										score: fullScore,
+										titles: scorer.TITLE,
+										isFreeAgent: isFreeAgent(getMyRoster(), playerid)
+									});
+									let fullVex = vex.dialog.alert({
+										unsafeMessage: fullView.innerHTML,
+										buttons: [{
+											type: 'button',
+											text: 'Close',
+											className: 'vex-dialog-button-secondary',
+											click: (e) => {
+												fullVex.close();
+											}
+										}]
+									});
+									alderVex.close();
+								}
+							},
 							{
 								type: 'button',
 								text: 'Close',
@@ -242,6 +320,26 @@ function renderRoster(roster, aldMap) {
 					});
 					break;
 			}
+		});
+	});
+	let helpers = Array.from(table.querySelectorAll('[data-positionkey]'));
+	helpers.forEach((helper) => {
+		helper.addEventListener('click', (e) => {
+			let position = helper.dataset.positionkey;
+			let details = POSITION_DETAILS[position];
+			let fields = scorer.POSITION_SCORE[position];
+			let weights = scorer.WEIGHT;
+			let titles = scorer.TITLE;
+			let explainView = views.getPositionExplanation({
+				position: position,
+				details: details,
+				fields: fields,
+				weights: weights,
+				titles: titles
+			});
+			vex.dialog.alert({
+				unsafeMessage: explainView
+			});
 		});
 	});
 
@@ -291,6 +389,56 @@ function isFreeAgent(roster, playerid) {
 		}
 	}
 	return !onRoster;
+}
+
+function getMyRoster() {
+	let roster = {};
+	ROSTER_ORDER.forEach((pos) => {
+		roster[pos] = localStorage.getItem(`fc_roster_${pos}`) || false;
+		if (!(roster[pos] in PLAYER_MAP)) {
+			roster[pos] = false;
+		}
+	});
+	return roster;
+}
+
+function setMyRoster(newRoster) {
+	for (let pos in newRoster) {
+		let pid = newRoster[pos] || false;
+		localStorage.setItem(`fc_roster_${pos}`, pid);
+	}
+	return getMyRoster();
+}
+
+function getHashFromRoster(roster) {
+	return ROSTER_ORDER.reduce((str, pos) => {
+		let pid = roster[pos];
+		let alpha = '_';
+		if (pid in PLAYER_MAP) {
+			let ward = PLAYER_MAP[pid].ward;
+			alpha = ALPHABET[ward];
+		}
+		return str + alpha;
+	}, '');
+}
+
+function getRosterFromHash(hash) {
+	let wardsToPlayers = {};
+	for (let pid in PLAYER_MAP) {
+		let profile = PLAYER_MAP[pid];
+		wardsToPlayers[profile.ward] = pid;
+	}
+	let hashParts = hash.split('');
+	return ROSTER_ORDER.reduce((roster, position, hidx) => {
+		let alpha = hashParts[hidx];
+		let ward = ALPHABET.indexOf(alpha);
+		if (ward > -1) {
+			roster[position] = wardsToPlayers[ward];
+		} else {
+			roster[position] = false;
+		}
+		return roster;
+	}, {});
 }
 
 function showSection(sectionName) {
