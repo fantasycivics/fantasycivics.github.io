@@ -23,6 +23,27 @@ const TIME_RANGE = [dStart, dEnd];
 
 console.log(TIME_RANGE)
 
+let PARAMS = getQueryParams(document.location.search);
+if (PARAMS.tab) {
+	showSection(PARAMS.tab);	
+}
+
+let myRoster = {
+	captain: false,
+	council1: false,
+	council2: false,
+	graffiti: false,
+	rodents: false
+};
+
+let tabs = Array.from(document.querySelector('#tabs-main').children);
+	tabs.forEach((tab) => {
+		tab.addEventListener('click', (e) => {
+			let tabName = tab.dataset.tab;
+			showSection(tabName);
+		});
+	});
+
 let ref = db.ref(`player_scores`);
 let query = ref.orderByChild('timestamp').startAt(TIME_RANGE[0]).endAt(TIME_RANGE[1]);
 query.once('value', (snap) => {
@@ -42,6 +63,9 @@ query.once('value', (snap) => {
 	});
 
 	console.log(aldMap);
+
+	showSection('roster');
+	renderRoster(myRoster, aldMap);
 
 	let rows = playerNodes.sort((a, b) => {
 		return 0;
@@ -90,7 +114,15 @@ query.once('value', (snap) => {
 						text: 'Add To Roster',
 						className: 'vex-dialog-button-primary',
 						click: (e) => {
-							console.log(e);
+							let copyRoster = copyObject(myRoster);
+							addPlayerToRoster(copyRoster, playerid, aldMap).then((newRoster) => {
+								if (newRoster) {
+									myRoster = newRoster;
+									renderRoster(myRoster, aldMap);
+									showSection('roster');
+								}
+							}).catch(console.error);
+							alderVex.close();
 						}
 					},
 					{
@@ -106,4 +138,169 @@ query.once('value', (snap) => {
 		});
 	});
 
+	renderRoster(myRoster, aldMap);
+
 });
+
+const ROSTER_ORDER = ['captain', 'council1', 'council2', 'graffiti', 'rodents'];
+const POSITION_CODE = {
+	captain: 'CPTN',
+	council1: 'CNCL',
+	council2: 'CNCL',
+	graffiti: 'GRAF',
+	rodents: 'RDNT'
+};
+
+function getRosterRows(roster, aldMap) {
+	return ROSTER_ORDER.map((pos) => {
+		let pid = roster[pos];
+		if (pid) {
+			let player = PLAYER_MAP[pid];
+			let data = aldMap[pid];
+			let breakdown = scorer.getScoreBreakdown(data);
+			let points = scorer.getScorePoints(breakdown);
+			let score = scorer.getScore(points);
+			return {
+				playerid: pid,
+				position: pos,
+				code: POSITION_CODE[pos],
+				name: player.name,
+				ward: player.ward,
+				lastMonth: score
+			};
+		} else {
+			return {
+				playerid: false,
+				position: pos,
+				code: POSITION_CODE[pos],
+				name: '---',
+				ward: '---',
+				lastMonth: 0
+			};
+		}
+	});
+}
+
+function renderRoster(roster, aldMap) {
+	let rows = getRosterRows(roster, aldMap);
+	let table = views.getRosterTable({
+		rows: rows
+	});
+	let out = document.querySelector('#roster-table');
+		out.innerHTML = '';
+		out.appendChild(table);
+	let buttons = Array.from(table.querySelectorAll('button[data-playerid]'));
+	buttons.forEach((button) => {
+		button.addEventListener('click', (e) => {
+			let playerid = button.dataset.playerid;
+			let position = button.dataset.position;
+			let action = button.dataset.action;
+			switch (action) {
+				case 'fill':
+					showSection('players');
+					break;
+				case 'drop':
+					roster[position] = false;
+					myRoster = roster;
+					renderRoster(myRoster);
+					break;
+				case 'view':
+					let player = PLAYER_MAP[playerid];
+					let data = aldMap[playerid];
+					let breakdown = scorer.getScoreBreakdown(data);
+					let points = scorer.getScorePoints(breakdown);
+					let score = scorer.getScore(points);
+					let alderView = views.getAlderView({
+						playerid: playerid,
+						profile: player,
+						breakdown: breakdown,
+						points: points,
+						score: score,
+						titles: scorer.TITLE
+					});
+					let alderVex = vex.dialog.alert({
+						unsafeMessage: alderView.innerHTML,
+						buttons: [
+							{
+								type: 'button',
+								text: 'Close',
+								className: 'vex-dialog-button-secondary',
+								click: (e) => {
+									alderVex.close();
+								}
+							}
+						]
+					});
+					break;
+			}
+		});
+	});
+
+}
+
+function addPlayerToRoster(oldRoster, playerid, aldMap) {
+	return new Promise((resolve, reject) => {
+		let addView = views.getAddPlayerView({
+			rows: getRosterRows(oldRoster, aldMap)
+		});
+		let addVex = vex.dialog.alert({
+			unsafeMessage: addView.innerHTML,
+			buttons: [
+				{
+					type: 'button',
+					text: 'Cancel',
+					className: 'vex-dialog-button-secondary',
+					click: (e) => {
+						resolve(false);
+						addVex.close();
+					}
+				}
+			],
+			callback: (value) => {
+				resolve(false);
+			}
+		});
+		let buttons = Array.from(addVex.contentEl.querySelectorAll('button[data-position]'));
+		buttons.forEach((button) => {
+			button.addEventListener('click', (e) => {
+				e.preventDefault();
+				let position = button.dataset.position;
+				oldRoster[position] = playerid;
+				resolve(oldRoster);
+				addVex.close();
+			});
+		});
+	});
+}
+
+function showSection(sectionName) {
+	let sections = Array.from(document.querySelectorAll('.section.is-single'));
+	sections.forEach((section) => {
+		if (!section.classList.contains('is-hidden')) {
+			section.classList.add('is-hidden');
+		}
+	});
+	document.querySelector(`[data-section="${sectionName}"]`).classList.remove('is-hidden');
+	let tabs = Array.from(document.querySelector('#tabs-main').children);
+	tabs.forEach((tab) => {
+		if (tab.classList.contains('is-active')) {
+			tab.classList.remove('is-active');
+		}
+	});
+	document.querySelector(`[data-tab="${sectionName}"]`).classList.add('is-active');
+}
+
+function copyObject(obj) {
+	return JSON.parse(JSON.stringify(obj));
+}
+
+function getQueryParams(qs) {
+	qs = qs.split('+').join(' ');
+	var params = {},
+		tokens,
+		re = /[?&]?([^=]+)=([^&]*)/g;
+	while (tokens = re.exec(qs)) {
+		params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+	}
+	return params;
+}

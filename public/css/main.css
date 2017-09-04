@@ -10,6 +10,10 @@ html, body, .vex-content {
 	background: #2c8c99;
 }
 
+.is-hidden {
+	display: none;
+}
+
 .headshot-holder {
 	display: flex;
 	justify-content: center;
@@ -21,4 +25,21 @@ html, body, .vex-content {
 	flex-shrink: 0;
 	min-width: 100%;
 	min-height: 100%
+}
+
+.is-rounded {
+	border-radius: 50%;
+}
+
+.is-inline-img {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.is-inline-img + span {
+	vertical-align: middle;	
+}
+
+.is-inline-img figure {
+	margin: 0 0.25rem 0 0 !important;
 }

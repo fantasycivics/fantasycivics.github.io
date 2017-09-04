@@ -35,8 +35,8 @@
 			<div class="hero-head">
 				<header class="nav">
 					<div class="container">
-						<div href="../" class="nav-left">
-							<a class="nav-item">
+						<div class="nav-left">
+							<a href="../" class="nav-item">
 								<img src="../public/img/logo-white.png" alt="Fantasy Civics">
 							</a>
 						</div>
@@ -57,13 +57,28 @@
 					<div class="content has-text-centered">
 						<h1 class="title is-2">Let's Play Fantasy Civics</h1>
 						<h2 class="subtitle is-4">Start creating your roster below.</h2>
+						<!--<progress class="progress is-small" value="15" max="100">15%</progress>-->
 					</div>
 				</div>
 			</div>
+			<div class="hero-footer">
+				<div class="tabs is-centered is-boxed">
+					<ul id="tabs-main">
+						<li data-tab="roster"><a>Roster</a></li>
+						<li data-tab="players"><a>Players</a></li>
+					</ul>
+				</div>
+			</div>
 		</section>
-		<section class="section">
+		<section data-section="roster" class="section is-single">
 			<div class="content">
-				<h1 class="title">The League</h1>
+				<h1 class="title">Your Roster</h1>
+				<div id="roster-table" class="table-holder"></div>
+			</div>
+		</section>
+		<section data-section="players" class="section is-single">
+			<div class="content">
+				<h1 class="title">The Players</h1>
 				<p class="subtitle">Here are the 50 alders on the Chicago City Council.</p>
 				<div id="alders-table" class="table-holder"></div>
 			</div>
