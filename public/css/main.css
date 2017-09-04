@@ -10,8 +10,17 @@ html, body, .vex-content {
 	background: #2c8c99;
 }
 
+.vex .vex-content {
+	padding: 2em !important;
+	width: 500px !important;
+}
+
 .is-hidden {
 	display: none;
+}
+
+.is-transparent {
+	background: transparent !important;
 }
 
 .headshot-holder {
@@ -42,4 +51,12 @@ html, body, .vex-content {
 
 .is-inline-img figure {
 	margin: 0 0.25rem 0 0 !important;
+}
+
+.is-narrow {
+	width: auto !important;
+}
+
+.table.is-right {
+	float: right;
 }

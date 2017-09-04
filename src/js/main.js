@@ -94,6 +94,7 @@ query.once('value', (snap) => {
 		button.addEventListener('click', (e) => {
 			let playerid = button.dataset.playerid;
 			let player = PLAYER_MAP[playerid];
+			let freeAgent = isFreeAgent(myRoster, playerid);
 			let data = aldMap[playerid];
 			let breakdown = scorer.getScoreBreakdown(data);
 			let points = scorer.getScorePoints(breakdown);
@@ -104,36 +105,39 @@ query.once('value', (snap) => {
 				breakdown: breakdown,
 				points: points,
 				score: score,
-				titles: scorer.TITLE
+				titles: scorer.TITLE,
+				isFreeAgent: freeAgent
+			});
+			let buttonList = [];
+			if (freeAgent) {
+				buttonList.push({
+					type: 'button',
+					text: 'Add To Roster',
+					className: 'vex-dialog-button-primary',
+					click: (e) => {
+						let copyRoster = copyObject(myRoster);
+						addPlayerToRoster(copyRoster, playerid, aldMap).then((newRoster) => {
+							if (newRoster) {
+								myRoster = newRoster;
+								renderRoster(myRoster, aldMap);
+								showSection('roster');
+							}
+						}).catch(console.error);
+						alderVex.close();
+					}
+				});
+			}
+			buttonList.push({
+				type: 'button',
+				text: 'Cancel',
+				className: 'vex-dialog-button-secondary',
+				click: (e) => {
+					alderVex.close();
+				}
 			});
 			let alderVex = vex.dialog.alert({
 				unsafeMessage: alderView.innerHTML,
-				buttons: [
-					{
-						type: 'button',
-						text: 'Add To Roster',
-						className: 'vex-dialog-button-primary',
-						click: (e) => {
-							let copyRoster = copyObject(myRoster);
-							addPlayerToRoster(copyRoster, playerid, aldMap).then((newRoster) => {
-								if (newRoster) {
-									myRoster = newRoster;
-									renderRoster(myRoster, aldMap);
-									showSection('roster');
-								}
-							}).catch(console.error);
-							alderVex.close();
-						}
-					},
-					{
-						type: 'button',
-						text: 'Cancel',
-						className: 'vex-dialog-button-secondary',
-						click: (e) => {
-							alderVex.close();
-						}
-					}
-				]
+				buttons: buttonList
 			});
 		});
 	});
@@ -158,7 +162,7 @@ function getRosterRows(roster, aldMap) {
 			let player = PLAYER_MAP[pid];
 			let data = aldMap[pid];
 			let breakdown = scorer.getScoreBreakdown(data);
-			let points = scorer.getScorePoints(breakdown);
+			let points = scorer.getScorePoints(breakdown, pos);
 			let score = scorer.getScore(points);
 			return {
 				playerid: pid,
@@ -183,8 +187,12 @@ function getRosterRows(roster, aldMap) {
 
 function renderRoster(roster, aldMap) {
 	let rows = getRosterRows(roster, aldMap);
+	let total = rows.reduce((sum, row) => {
+		return sum + row.lastMonth;
+	}, 0);
 	let table = views.getRosterTable({
-		rows: rows
+		rows: rows,
+		total: total
 	});
 	let out = document.querySelector('#roster-table');
 		out.innerHTML = '';
@@ -208,7 +216,7 @@ function renderRoster(roster, aldMap) {
 					let player = PLAYER_MAP[playerid];
 					let data = aldMap[playerid];
 					let breakdown = scorer.getScoreBreakdown(data);
-					let points = scorer.getScorePoints(breakdown);
+					let points = scorer.getScorePoints(breakdown, position);
 					let score = scorer.getScore(points);
 					let alderView = views.getAlderView({
 						playerid: playerid,
@@ -216,7 +224,8 @@ function renderRoster(roster, aldMap) {
 						breakdown: breakdown,
 						points: points,
 						score: score,
-						titles: scorer.TITLE
+						titles: scorer.TITLE,
+						isFreeAgent: isFreeAgent(myRoster, playerid)
 					});
 					let alderVex = vex.dialog.alert({
 						unsafeMessage: alderView.innerHTML,
@@ -271,6 +280,17 @@ function addPlayerToRoster(oldRoster, playerid, aldMap) {
 			});
 		});
 	});
+}
+
+function isFreeAgent(roster, playerid) {
+	let onRoster = false;
+	for (let pos in roster) {
+		let pid = roster[pos];
+		if (pid === playerid) {
+			onRoster = true;
+		}
+	}
+	return !onRoster;
 }
 
 function showSection(sectionName) {
