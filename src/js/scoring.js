@@ -54,17 +54,17 @@ let Scoring = () => {
 			incomplete_rodent_baiting: 0
 		};
 		DATASETS_311.forEach((did) => {
-			let complete = data[`complete_${did}`];
-			let incomplete = data[`incomplete_${did}`];
+			let complete = data[`complete_${did}`] || 0;
+			let incomplete = data[`incomplete_${did}`] || 0;
 			breakdown[`complete_${did}`] += complete;
 			breakdown[`incomplete_${did}`] += incomplete;
 		});
-		breakdown.absent = data.votes_absent;
-		breakdown.contrarian = data.votes_no_mayor;
-		breakdown.win = data.votes_yes_pass + data.votes_no_fail
-		breakdown.lose = data.votes_yes_fail + data.votes_no_pass
-		breakdown.pass = data.sponsor_pass;
-		breakdown.fail = data.sponsor_fail;
+		breakdown.absent = data.votes_absent || 0;
+		breakdown.contrarian = data.votes_no_mayor || 0;
+		breakdown.win = (data.votes_yes_pass || 0) + (data.votes_no_fail || 0);
+		breakdown.lose = (data.votes_yes_fail || 0) + (data.votes_no_pass || 0);
+		breakdown.pass = data.sponsor_pass || 0;
+		breakdown.fail = data.sponsor_fail || 0;
 		return breakdown;	
 	}
 

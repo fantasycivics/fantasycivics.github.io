@@ -1,5 +1,6 @@
 import {Views} from './views';
 import {Scoring} from './scoring';
+import {Fetch311} from './311';
 
 let config = {
 	apiKey: "AIzaSyDusGUpsFfhJmRnmB2cgfetwR3ZR2otqe4",
@@ -13,13 +14,29 @@ let db = DatabaseFirebase.database();
 
 let views = Views();
 let scorer = Scoring();
+let fetch311 = Fetch311();
 
-let now = new Date('8/1/2017');
+let PARAMS = getQueryParams(document.location.search);
+if (PARAMS.tab) {
+	showSection(PARAMS.tab);	
+}
+let ts = new Date('8/1/2017').getTime(); //Date.now();
+if (PARAMS.date) {
+	let dateParts = PARAMS.date.split('-');
+	ts = new Date(dateParts[1], parseInt(dateParts[0]) - 1).getTime();
+}
+
+let now = new Date(ts);
 let lastMonth = now.getUTCMonth() - 1;
 let dStart = new Date(now.getUTCFullYear(), lastMonth).getTime();
 let dEnd = new Date(now.getUTCFullYear(), now.getUTCMonth()).getTime();
+let dProj = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1).getTime();
 
 const TIME_RANGE = [dStart, dEnd];
+const PROJECTION_RANGE = [dEnd, dProj];
+
+console.log(TIME_RANGE)
+console.log(PROJECTION_RANGE)
 
 const ROSTER_ORDER = ['captain', 'council1', 'council2', 'graffiti', 'rodents'];
 const POSITION_DETAILS = {
@@ -49,13 +66,6 @@ const POSITION_DETAILS = {
 		description: 'Earns points for fulfilling rodent baiting 311 requests.'
 	}
 };
-
-console.log(TIME_RANGE)
-
-let PARAMS = getQueryParams(document.location.search);
-if (PARAMS.tab) {
-	showSection(PARAMS.tab);	
-}
 
 let tabs = Array.from(document.querySelector('#tabs-main').children);
 tabs.forEach((tab) => {
@@ -94,12 +104,13 @@ document.querySelector('#share-roster').addEventListener('click', (e) => {
 	});
 });
 
-let ref = db.ref(`player_scores`);
-let query = ref.orderByChild('timestamp').startAt(TIME_RANGE[0]).endAt(TIME_RANGE[1]);
-query.once('value', (snap) => {
+getPlayerNodes(TIME_RANGE).then((nodes) => {
+	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
+		main(nodes, projMap);
+	});
+}).catch(console.error);
 
-	let nodes = snap.val() || {};
-
+function main(nodes, projMap) {
 	let playerNodes = Object.keys(nodes).map((key) => {
 		let val = nodes[key];
 			val.key = key;
@@ -112,13 +123,16 @@ query.once('value', (snap) => {
 		aldMap[pid] = data;
 	});
 
+	console.log(aldMap);
+	console.log(projMap);
+
 	if (PARAMS.roster) {
 		let roster = getRosterFromHash(PARAMS.roster);
 		setMyRoster(roster);
 	}
 
 	showSection('roster');
-	renderRoster(getMyRoster(), aldMap);
+	renderRoster(getMyRoster(), aldMap, projMap);
 
 	let rows = playerNodes.sort((a, b) => {
 		return 0;
@@ -127,10 +141,15 @@ query.once('value', (snap) => {
 		let breakdown = scorer.getScoreBreakdown(data);
 		let points = scorer.getScorePoints(breakdown);
 		let score = scorer.getScore(points);
+		let proj = projMap[data.playerid] || {};
+		let projBreakDown = scorer.getScoreBreakdown(proj);
+		let projPoints = scorer.getScorePoints(projBreakDown);
+		let projScore = scorer.getScore(projPoints);
 		return {
 			playerid: data.playerid,
 			name: player.name,
 			ward: player.ward,
+			projected: projScore,
 			lastMonth: score
 		};
 	});
@@ -148,13 +167,14 @@ query.once('value', (snap) => {
 			let playerid = button.dataset.playerid;
 			let player = PLAYER_MAP[playerid];
 			let freeAgent = isFreeAgent(getMyRoster(), playerid);
-			let data = aldMap[playerid];
+			let data = aldMap[playerid] || {};
 			let breakdown = scorer.getScoreBreakdown(data);
 			let points = scorer.getScorePoints(breakdown);
 			let score = scorer.getScore(points);
 			let month = moment(data.timestamp).format('MMMM YYYY');
 			let alderView = views.getAlderView({
-				title: `${month} Scouting Report`,
+				month: month,
+				title: `Scouting Report`,
 				playerid: playerid,
 				profile: player,
 				breakdown: breakdown,
@@ -171,10 +191,10 @@ query.once('value', (snap) => {
 					className: 'vex-dialog-button-primary',
 					click: (e) => {
 						let copyRoster = getMyRoster();
-						addPlayerToRoster(copyRoster, playerid, aldMap).then((newRoster) => {
+						addPlayerToRoster(copyRoster, playerid, aldMap, projMap).then((newRoster) => {
 							if (newRoster) {
 								let showRoster = setMyRoster(newRoster);
-								renderRoster(showRoster, aldMap);
+								renderRoster(showRoster, aldMap, projMap);
 								showSection('roster');
 							}
 						}).catch(console.error);
@@ -196,24 +216,28 @@ query.once('value', (snap) => {
 			});
 		});
 	});
+}
 
-});
-
-function getRosterRows(roster, aldMap) {
+function getRosterRows(roster, aldMap, projMap) {
 	return ROSTER_ORDER.map((pos) => {
 		let pid = roster[pos];
 		if (pid) {
 			let player = PLAYER_MAP[pid];
-			let data = aldMap[pid];
+			let data = aldMap[pid] || {};
 			let breakdown = scorer.getScoreBreakdown(data);
 			let points = scorer.getScorePoints(breakdown, pos);
 			let score = scorer.getScore(points);
+			let proj = projMap[pid] || {};
+			let projBreakDown = scorer.getScoreBreakdown(proj);
+			let projPoints = scorer.getScorePoints(projBreakDown);
+			let projScore = scorer.getScore(projPoints);
 			return {
 				playerid: pid,
 				position: pos,
 				code: POSITION_DETAILS[pos].code,
 				name: player.name,
 				ward: player.ward,
+				projected: projScore,
 				lastMonth: score
 			};
 		} else {
@@ -223,19 +247,25 @@ function getRosterRows(roster, aldMap) {
 				code: POSITION_DETAILS[pos].code,
 				name: '---',
 				ward: '---',
+				projected: 0,
 				lastMonth: 0
 			};
 		}
 	});
 }
 
-function renderRoster(roster, aldMap) {
-	let rows = getRosterRows(roster, aldMap);
+function renderRoster(roster, aldMap, projMap) {
+	let rows = getRosterRows(roster, aldMap, projMap);
+	let projected = rows.reduce((sum, row) => {
+		return sum + row.projected;
+	}, 0);
 	let total = rows.reduce((sum, row) => {
 		return sum + row.lastMonth;
 	}, 0);
 	let table = views.getRosterTable({
 		rows: rows,
+		lastMonth: moment(TIME_RANGE[0]).format('MMMM YYYY'),
+		projected: projected,
 		total: total
 	});
 	let out = document.querySelector('#roster-table');
@@ -254,16 +284,18 @@ function renderRoster(roster, aldMap) {
 				case 'drop':
 					roster[position] = false;
 					let newRoster = setMyRoster(roster);
-					renderRoster(newRoster, aldMap);
+					renderRoster(newRoster, aldMap, projMap);
 					break;
 				case 'view':
 					let player = PLAYER_MAP[playerid];
-					let data = aldMap[playerid];
+					let data = aldMap[playerid] || {};
 					let breakdown = scorer.getScoreBreakdown(data);
 					let points = scorer.getScorePoints(breakdown, position);
 					let score = scorer.getScore(points);
 					let playerTitle = POSITION_DETAILS[position].title;
+					let month = moment(data.timestamp).format('MMMM YYYY');
 					let alderView = views.getAlderView({
+						month: month,
 						title: playerTitle,
 						playerid: playerid,
 						profile: player,
@@ -285,7 +317,8 @@ function renderRoster(roster, aldMap) {
 									let fullScore = scorer.getScore(fullPoints);
 									let month = moment(data.timestamp).format('MMMM YYYY');
 									let fullView = views.getAlderView({
-										title: `${month} Scouting Report`,
+										month: month,
+										title: `Scouting Report`,
 										playerid: playerid,
 										profile: player,
 										breakdown: breakdown,
@@ -345,10 +378,10 @@ function renderRoster(roster, aldMap) {
 
 }
 
-function addPlayerToRoster(oldRoster, playerid, aldMap) {
+function addPlayerToRoster(oldRoster, playerid, aldMap, projMap) {
 	return new Promise((resolve, reject) => {
 		let addView = views.getAddPlayerView({
-			rows: getRosterRows(oldRoster, aldMap)
+			rows: getRosterRows(oldRoster, aldMap, projMap)
 		});
 		let addVex = vex.dialog.alert({
 			unsafeMessage: addView.innerHTML,
@@ -456,6 +489,69 @@ function showSection(sectionName) {
 		}
 	});
 	document.querySelector(`[data-tab="${sectionName}"]`).classList.add('is-active');
+}
+
+function getPlayerNodes(timeRange) {
+	return new Promise((resolve, reject) => {
+		try {
+			let ref = db.ref(`player_scores`);
+			let query = ref.orderByChild('timestamp').startAt(timeRange[0]).endAt(timeRange[1]);
+			query.once('value', (snap) => {
+				let nodes = snap.val() || {};
+				resolve(nodes);
+			});
+		} catch (err) {
+			reject(err);
+		}
+	});
+}
+
+function getPlayerProjections(timeRange) {
+	return new Promise((resolve, reject) => {
+		let promises = [];
+		for (let pid in PLAYER_MAP) {
+			scorer.DATASETS_311.forEach((did) => {
+				let p = fetch311.getFromDataset({
+					player: pid,
+					dataset: did,
+					from: timeRange[0],
+					to: timeRange[1]
+				});
+				p.pid = pid;
+				p.did = did;
+				promises.push(p);
+			});
+		}
+		let aldMap = {};
+		Promise.all(promises).then((resList) => {
+			resList.forEach((res, ridx) => {
+				let meta = promises[ridx];
+				let pid = meta.pid;
+				let did = meta.did;
+				if (!(pid in aldMap)) {
+					aldMap[pid] = {};
+				}
+				if (!(did in aldMap[pid])) {
+					aldMap[pid][`complete_${did}`] = 0;
+					aldMap[pid][`incomplete_${did}`] = 0;
+				}
+				res.forEach((entry) => {
+					if (entry.completion_date) {
+						let completedOn = new Date(entry.completion_date).getTime();
+						let completedOnTime = completedOn < timeRange[1];
+						if (completedOnTime) {
+							aldMap[pid][`complete_${did}`]++;
+						} else {
+							aldMap[pid][`incomplete_${did}`]++;
+						}
+					} else {
+						aldMap[pid][`incomplete_${did}`]++;
+					}
+				});
+			});
+			resolve(aldMap);
+		}).catch(reject);
+	});
 }
 
 function copyObject(obj) {

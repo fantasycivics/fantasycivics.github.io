@@ -250,6 +250,8 @@ function clean311Data() {
 						} else {
 							aldMap[pid][`incomplete_${did}`]++;
 						}
+					} else {
+						aldMap[pid][`incomplete_${did}`]++;
 					}
 				});
 			});

@@ -7,7 +7,8 @@ let Views = () => {
 					<tr>
 						<th>Player</th>
 						<th>Ward</th>
-						<th>Score</th>
+						<th>Projected</th>
+						<th>Last Month</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -25,6 +26,7 @@ let Views = () => {
 							<span>${row.name}</span>
 						</td>
 						<td>${row.ward}</td>
+						<td>${row.projected}</td>
 						<td>${row.lastMonth}</td>
 						<td>
 							<button data-playerid="${row.playerid}" class="button is-primary is-outlined">View</button>
@@ -67,7 +69,7 @@ let Views = () => {
 					</div>
 				</div>
 				<hr>
-				<p class="title is-5">Points Breakdown</p>
+				<p class="title is-5">${model.month} Points Breakdown</p>
 				<table class="table is-fullwidth">
 					<thead>
 						<tr>
@@ -108,7 +110,8 @@ let Views = () => {
 						<th>Position</th>
 						<th>Player</th>
 						<th>Ward</th>
-						<th>Score</th>
+						<th>Projected</th>
+						<th>${model.lastMonth}</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -132,6 +135,7 @@ let Views = () => {
 							<span>${row.name}</span>
 						</td>
 						<td>${row.ward}</td>
+						<td>${row.projected}</td>
 						<td>${row.lastMonth}</td>
 						<td>
 				`;
@@ -158,22 +162,16 @@ let Views = () => {
 				table.classList.add('table');
 				table.classList.add('is-fullwidth');
 			let scoreHTML = `
-				<tbody>
-					<tr>
-						<td>
-							<h3 class="title tag is-transparent is-not-padded">Total Score</h3>
-						</td>
-						<td>
-							<h3 class="title tag is-primary">${model.total}</h3>
-						</td>
-					</tr>
-				</tbody>
+				<p class="has-text-centered">
+					<span class="title is-5 tag is-transparent">Projected Total</span>
+					<span class="title is-5 tag is-primary">${model.projected}</span>
+					<span class="title is-5 tag is-transparent">${model.lastMonth} Total</span>
+					<span class="title is-5 tag is-warning">${model.total}</span>
+				</p>
 			`;
-			let scoreTable = document.createElement('table');
+			let scoreTable = document.createElement('div');
 				scoreTable.innerHTML = scoreHTML;
-				scoreTable.classList.add('table');
-				scoreTable.classList.add('is-narrow');
-				//scoreTable.classList.add('is-right');
+				//scoreTable.classList.add('box');
 			let div = document.createElement('div');
 				div.appendChild(table);
 				div.appendChild(scoreTable);
