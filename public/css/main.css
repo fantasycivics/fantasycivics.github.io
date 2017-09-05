@@ -1,3 +1,11 @@
+html {
+	background: #2c8c99;
+}
+
+body {
+	background: #ffffff;
+}
+
 html, body, .vex-content {
 	font-family: "Roboto", sans-serif !important;
 }
@@ -15,7 +23,7 @@ html, body, .vex-content {
 	width: 500px !important;
 }
 
-.is-bold {
+.is-bold-text {
 	font-weight: bold !important;
 }
 
@@ -25,6 +33,10 @@ html, body, .vex-content {
 
 .is-transparent {
 	background: transparent !important;
+}
+
+.section.is-light-gray {
+	background: #F4F2F6;
 }
 
 .headshot-holder {
@@ -61,6 +73,10 @@ html, body, .vex-content {
 	width: auto !important;
 }
 
+.table-holder {
+	overflow-x: scroll !important;
+}
+
 .table.is-right {
 	float: right;
 }
@@ -72,4 +88,22 @@ html, body, .vex-content {
 .helper-icon:hover {
 	cursor: pointer;
 	color: #2c8c99 !important;
+}
+
+.is-normally-spaced {
+	margin-top: -0.5rem !important;
+}
+
+.is-neatly-spaced {
+	margin-top: -1.0rem !important;
+}
+
+.is-splash-img-bottom {
+	margin-bottom: -4rem;
+	box-shadow: 0 0 30px rgba(71, 82, 93, 0.15);
+}
+
+a, .button {
+	text-decoration: none !important;
+	font-weight: bold;
 }
