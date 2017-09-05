@@ -1,0 +1,22 @@
+{
+  "name": "Fantasy Civics",
+  "description": "A fantasy sports-style game about Chicago city politics.",
+  "icons": [{
+    "src": "./public/img/tile-color.png",
+    "sizes": "128x128",
+    "type": "image/png"
+  }],
+  "developer": {
+    "name": "Fantasy Civics",
+    "url": "v@hawk.iit.edu"
+  },
+  "default_locale": "en",
+  "lang": "en-US",
+  "chrome": { "navigation": true },
+  "start_url": "/game",
+  "launch_path": "/game",
+  "theme_color": "#2c8c99",
+  "display": "standalone",
+  "fullscreen": "true",
+  "orientation": "portrait"
+}

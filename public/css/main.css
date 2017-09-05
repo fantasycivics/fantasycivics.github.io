@@ -107,3 +107,64 @@ a, .button {
 	text-decoration: none !important;
 	font-weight: bold;
 }
+
+/* LOADING */
+
+.content .is-inverted-text {
+	color: #ffffff !important;
+}
+
+.loading-body {
+	overflow: hidden;
+	width: 100vw;
+	height: 100vh;
+}
+
+.loading {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: #2c8c99;
+	color: white;
+	text-align: center;
+	z-index: 10;
+	/* Center Vertically */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	resize: vertical;
+}
+
+@keyframes LoadingPulse {
+	0% {
+		width: 25vh;
+	}
+	50% {
+		width: 30vh;
+	}
+	100% {
+		width: 25vh;
+	}
+}
+
+.loading div {
+	height: 35vh;
+	/* Center Vertically */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	resize: vertical;
+}
+
+.loading div img {
+	width: 50vw;
+	display: block;
+	margin: 0 auto;
+	animation: LoadingPulse 2s infinite;
+}
+
+.loading h1 {
+	line-height: 40px;
+}

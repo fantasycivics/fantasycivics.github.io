@@ -161,6 +161,9 @@ let Views = () => {
 				table.innerHTML = html;
 				table.classList.add('table');
 				table.classList.add('is-fullwidth');
+			let tableDiv = document.createElement('div');
+				tableDiv.classList.add('table-holder');
+				tableDiv.appendChild(table);
 			let scoreHTML = `
 				<p class="has-text-centered">
 					<span class="title is-5 tag is-transparent">Projected Total</span>
@@ -173,7 +176,7 @@ let Views = () => {
 				scoreTable.innerHTML = scoreHTML;
 				//scoreTable.classList.add('box');
 			let div = document.createElement('div');
-				div.appendChild(table);
+				div.appendChild(tableDiv);
 				div.appendChild(scoreTable);
 			return div;
 		},

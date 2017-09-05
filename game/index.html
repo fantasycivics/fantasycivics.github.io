@@ -16,7 +16,7 @@
 
 		<link rel="icon" sizes="192x192" href="https://fantasycivics.github.io/favicon.ico">
 		<link rel="image_src" href="https://fantasycivics.github.io/public/img/tile-color.png">
-        <!--<link rel="manifest" href="./manifest.webapp">-->
+        <link rel="manifest" href="./manifest.webapp">
 
 		<script type="text/javascript" src="../public/vex/vex.combined.min.js"></script>
 		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
@@ -34,6 +34,12 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
 	</head>
 	<body>
+		<section id="loading" class="loading content">
+			<div>
+				<img src="../public/img/logo-white.png">
+			</div>
+			<h1 id="loading-message" class="title is-2 is-inverted-text">Loading Fantasy Civics</h1>
+		</section>
 		<section class="hero is-primary is-bold">
 			<div class="hero-head">
 				<header class="nav">
@@ -43,11 +49,11 @@
 								<img src="../public/img/logo-white.png" alt="Fantasy Civics">
 							</a>
 						</div>
-						<span id="mobile-nav-button" class="nav-toggle">
+						<!-- <span class="nav-toggle">
 							<span></span>
 							<span></span>
 							<span></span>
-						</span>
+						</span> -->
 						<div class="nav-right nav-menu">
 							<a href="https://github.com/fantasycivics/fantasycivics.github.io/issues" target="_blank" class="nav-item">Contact</a>
 							<a href="../" class="nav-item">Home</a>
@@ -77,7 +83,7 @@
 			<div class="content">
 				<h1 class="title">Your Roster</h1>
 				<p class="subtitle">Choose a team of five alders. Click on a position to see how they are scored.</p>
-				<div id="roster-table" class="table-holder">
+				<div id="roster-table">
 					<p class="has-text-centered">Loading...</p>
 					<br>
 				</div>
@@ -106,5 +112,14 @@
 		<!-- Roster Scripts -->
 		<script type="text/javascript" src="../public/js/aldermen.js"></script>
 		<script type="text/javascript" src="../public/js/main.js"></script>
+		
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+			ga('create', 'UA-68045716-2', 'auto');
+			ga('send', 'pageview');
+		</script>
 	</body>
 </html>

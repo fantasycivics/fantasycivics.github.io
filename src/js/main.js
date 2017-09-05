@@ -104,6 +104,20 @@ document.querySelector('#share-roster').addEventListener('click', (e) => {
 	});
 });
 
+let LOADING_MESSAGES = [
+	'Organizing obscure paperwork...',
+	'It\'s always a good day to learn about civics.',
+	'Fantasy Civics was created with love at ChiHackNight.',
+	'Submitting FOIA requests...',
+	'Analyzing your alders\' smile...',
+	'Calculating your alders\' favorite emoji...'
+];
+
+let loadingMessage = document.getElementById('loading-message');
+let lidx = Math.floor(Math.random() * LOADING_MESSAGES.length);
+loadingMessage.innerText = LOADING_MESSAGES[lidx] || 'Loading Fantasy Civics';
+document.body.classList.add('loading-body');
+
 getPlayerNodes(TIME_RANGE).then((nodes) => {
 	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
 		main(nodes, projMap);
@@ -111,6 +125,10 @@ getPlayerNodes(TIME_RANGE).then((nodes) => {
 }).catch(console.error);
 
 function main(nodes, projMap) {
+
+	document.body.classList.remove('loading-body');
+	document.querySelector('#loading').classList.add('is-hidden');
+
 	let playerNodes = Object.keys(nodes).map((key) => {
 		let val = nodes[key];
 			val.key = key;
@@ -122,9 +140,6 @@ function main(nodes, projMap) {
 		let pid = data.playerid;
 		aldMap[pid] = data;
 	});
-
-	console.log(aldMap);
-	console.log(projMap);
 
 	if (PARAMS.roster) {
 		let roster = getRosterFromHash(PARAMS.roster);
@@ -216,6 +231,7 @@ function main(nodes, projMap) {
 			});
 		});
 	});
+
 }
 
 function getRosterRows(roster, aldMap, projMap) {
