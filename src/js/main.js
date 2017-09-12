@@ -121,37 +121,25 @@ let lidx = Math.floor(Math.random() * LOADING_MESSAGES.length);
 loadingMessage.innerText = LOADING_MESSAGES[lidx] || 'Loading Fantasy Civics';
 document.body.classList.add('loading-body');
 
-getPlayerNodes(TIME_RANGE).then((nodes) => {
+/*getPlayerNodes(TIME_RANGE).then((nodes) => {
+	let aldMap = getPlayerDataMap(nodes);
 	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
-		main(nodes, projMap);
+		main(aldMap, projMap);
+	});
+}).catch(console.error);*/
+
+getPlayerNodes(TIME_RANGE).then((nodes) => {
+	let aldMap = getPlayerDataMap(nodes);
+	getPlayerNodes(PROJECTION_RANGE).then((projNodes) => {
+		let projMap = getPlayerDataMap(projNodes);
+		main(aldMap, projMap);
 	});
 }).catch(console.error);
 
-getPlayerNodes(PROJECTION_RANGE).then((projNodes) => {
-	console.log('projection nodes')
-	console.log(projNodes)
-	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
-		console.log('projection map')
-		console.log(projMap)
-	});
-});
-
-function main(nodes, projMap) {
+function main(aldMap, projMap) {
 
 	document.body.classList.remove('loading-body');
 	document.querySelector('#loading').classList.add('is-hidden');
-
-	let playerNodes = Object.keys(nodes).map((key) => {
-		let val = nodes[key];
-			val.key = key;
-		return val;
-	});
-
-	let aldMap = {};
-	playerNodes.forEach((data) => {
-		let pid = data.playerid;
-		aldMap[pid] = data;
-	});
 
 	if (PARAMS.roster) {
 		let roster = getRosterFromHash(PARAMS.roster);
@@ -161,7 +149,9 @@ function main(nodes, projMap) {
 	showSection('roster');
 	renderRoster(getMyRoster(), aldMap, projMap);
 
-	let rows = playerNodes.sort((a, b) => {
+	let rows = Object.keys(aldMap).map((key) => {
+		return aldMap[key];
+	}).sort((a, b) => {
 		return 0;
 	}).map((data) => {
 		let player = PLAYER_MAP[data.playerid];
@@ -517,6 +507,22 @@ function showSection(sectionName) {
 		}
 	});
 	document.querySelector(`[data-tab="${sectionName}"]`).classList.add('is-active');
+}
+
+function getPlayerDataMap(nodes) {
+	let playerNodes = Object.keys(nodes).map((key) => {
+		let val = nodes[key];
+			val.key = key;
+		return val;
+	});
+
+	let aldMap = {};
+	playerNodes.forEach((data) => {
+		let pid = data.playerid;
+		aldMap[pid] = data;
+	});
+
+	return aldMap;
 }
 
 function getPlayerNodes(timeRange) {

@@ -1,5 +1,6 @@
 const API_URL = `http://ocd.datamade.us/`;
 const MAYOR_OCD = 'ocd-person/f649753d-081d-4f22-8dcf-3af71de0e6ca';
+const SOURCE_REF = 'sept_test_2';
 
 let config = {
 	apiKey: "AIzaSyDusGUpsFfhJmRnmB2cgfetwR3ZR2otqe4",
@@ -22,23 +23,45 @@ const DATASETS_311 = [
 	'rodent_baiting'
 ];
 
-cleanAllData().then((aldMap) => {
-	let promises = [];
-	let entries = [];
-	let midPointTimestamp = Math.round((0.5) * (TIME_RANGE[1] + TIME_RANGE[0]));
-	for (let pid in aldMap) {
-		let entry = aldMap[pid];
-			entry.playerid = pid;
-			entry.timestamp = midPointTimestamp;
-		entries.push(entries);
-		/*let p = db.ref(`player_scores`).push(entry);
-		promises.push(p);*/
-	}
-	console.log(`Prepared ${entries.length} records.`);
-	Promise.all(promises).then((done) => {
-		console.log(`Saved ${done.length} records to Firebase.`);
+//main();
+//clearNodes(TIME_RANGE);
+
+function main() {
+	cleanAllData().then((aldMap) => {
+		let promises = [];
+		let entries = [];
+		let midPointTimestamp = Math.round((0.5) * (TIME_RANGE[1] + TIME_RANGE[0]));
+		for (let pid in aldMap) {
+			let entry = aldMap[pid];
+				entry.playerid = pid;
+				entry.timestamp = midPointTimestamp;
+			entries.push(entries);
+			let p = db.ref(`player_scores`).push(entry);
+			promises.push(p);
+		}
+		console.log(`Prepared ${entries.length} records.`);
+		Promise.all(promises).then((done) => {
+			console.log(`Saved ${done.length} records to Firebase.`);
+		}).catch(console.error);
 	}).catch(console.error);
-}).catch(console.error);
+}
+
+function clearNodes(timeRange) {
+	let base = `player_scores`;
+	let query = db.ref(base).orderByChild('timestamp').startAt(timeRange[0]).endAt(timeRange[1]);
+	query.once('value', (snap) => {
+		let nodes = snap.val();
+		console.log(`Found ${Object.keys(nodes).length} entries to clear.`);
+		let promises = [];
+		Object.keys(nodes).forEach((key) => {
+			let p = db.ref(`${base}/${key}`).remove();
+			promises.push(p);
+		});
+		Promise.all(promises).then((done) => {
+			console.log(`Cleared ${promises.length} entries!`);
+		});
+	});
+}
 
 function cleanAllData() {
 	return new Promise((resolveAll, rejectAll) => {
@@ -98,7 +121,7 @@ function cleanAllData() {
 
 function cleanCityCouncilData(val) {
 	return new Promise((resolve, reject) => {
-		db.ref('sept_test_1').once('value', (snap) => {
+		db.ref(SOURCE_REF).once('value', (snap) => {
 
 			let val = snap.val();
 

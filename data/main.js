@@ -42,6 +42,22 @@ console.logSoftly = (res) => {
 	}
 }
 
+let reflectPromise = (promise) => {
+	return new Promise((resolve, reject) => {
+		promise.then((data) => {
+			resolve({
+				success: true,
+				data: data
+			});
+		}).catch((err) => {
+			resolve({
+				success: false,
+				data: err
+			});
+		});
+	});
+}
+
 let getOCD = (queryStr) => {
 	return new Promise((resolve, reject) => {
 		request(`${API_URL}${queryStr}`, (error, response, body) => {
@@ -113,7 +129,7 @@ let voteURL = 'votes?organization__id=ocd-organization/ef168607-9135-4177-ad8e-c
 	voteURL += '&start_date__contains=2017-09'
 	voteURL += '&sort=start_date'
 
-let startOnPage = 2; // Total: 6 pages for July 2017 records, none for August 2017
+let startOnPage = 1; // Total: 6 pages for July 2017 records, none for August 2017
 let endOnPage = 2;
 
 getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
@@ -131,48 +147,60 @@ getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
 	let promises = [];
 	res.forEach(voteRecord => {
 		let vp = getVoteDetails(voteRecord);
-		promises.push(vp);
+		let rp = reflectPromise(vp);
+		promises.push(rp);
 	});
 	Promise.all(promises).then(votes => {
 
 		//let aldMap = {};
 
-		votes.forEach(voteData => {
-			let vote = voteData.vote;
-			let bill = voteData.bill;
-			bill.sponsorships.forEach(sponsor => {
-				output.push({
-					type: 'sponsorship',
-					timestamp: getVoteTimestamp(vote),
-					ocd_person: sponsor.entity_id,
-					ocd_bill: bill.id,
-					mayor_sponsored: sponsoredByMayor(bill),
-					identifier: bill.identifier[0],
-					result: vote.result,
-					classification: sponsor.classification
+		let successCount = 0;
+		let failureCount = 0;
+
+		votes.forEach((payload) => {
+			if (payload.success) {
+				successCount++;
+				let voteData = payload.data;
+				let vote = voteData.vote;
+				let bill = voteData.bill;
+				bill.sponsorships.forEach(sponsor => {
+					output.push({
+						type: 'sponsorship',
+						timestamp: getVoteTimestamp(vote),
+						ocd_person: sponsor.entity_id,
+						ocd_bill: bill.id,
+						mayor_sponsored: sponsoredByMayor(bill),
+						identifier: bill.identifier[0],
+						result: vote.result,
+						classification: sponsor.classification
+					});
 				});
-			});
-			vote.votes.forEach(voteCast => {
-				output.push({
-					type: 'vote',
-					timestamp: getVoteTimestamp(vote),
-					ocd_person: voteCast.voter.id,
-					ocd_bill: bill.id,
-					mayor_sponsored: sponsoredByMayor(bill),
-					identifier: bill.identifier[0],
-					result: vote.result,
-					option: voteCast.option
+				vote.votes.forEach(voteCast => {
+					output.push({
+						type: 'vote',
+						timestamp: getVoteTimestamp(vote),
+						ocd_person: voteCast.voter.id,
+						ocd_bill: bill.id,
+						mayor_sponsored: sponsoredByMayor(bill),
+						identifier: bill.identifier[0],
+						result: vote.result,
+						option: voteCast.option
+					});
+					//aldMap[voteCast.voter.id] = voteCast.voter_name
 				});
-				//aldMap[voteCast.voter.id] = voteCast.voter_name
-			});
+			} else {
+				failureCount++;
+			}
 		});
 
 		//console.logSoftly(output);
 		//console.log(aldMap)
 
 		console.log(`Found ${output.length} records.`);
+		console.log(`Success on ${successCount} records.`);
+		console.log(`Errors on ${failureCount} records.`);
 
-		saveOutput('sept_test_1', output).then(done => {
+		saveOutput('sept_test_2', output).then(done => {
 			console.log(`Saved ${output.length} records to Firebase.`);
 		}).catch(console.error);
 
