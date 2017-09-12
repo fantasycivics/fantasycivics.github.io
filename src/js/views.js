@@ -135,7 +135,19 @@ let Views = () => {
 							<span>${row.name}</span>
 						</td>
 						<td>${row.ward}</td>
-						<td>${row.projected}</td>
+						<td>
+				`;
+				if (row.playerid) {
+					html += `
+						<a class="is-underlined" data-playerid="${row.playerid}" data-action="view" data-position="${row.position}" data-projected="true">${row.projected}</a>
+					`;
+				} else {
+					html += `
+						${row.projected}
+					`;
+				}
+				html += `
+						</td>
 						<td>${row.lastMonth}</td>
 						<td>
 				`;

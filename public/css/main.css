@@ -27,6 +27,19 @@ html, body, .vex-content {
 	font-weight: bold !important;
 }
 
+.is-underlined {
+	border-bottom: 1px dashed #363636;
+	color: #363636;
+	font-weight: normal !important;
+}
+
+.is-underlined:hover, .is-underlined:active {
+	cursor: pointer;
+	border-bottom: 2px dashed #2c8c99;
+	color: #2c8c99;
+	font-weight: bold !important;
+}
+
 .is-hidden {
 	display: none;
 }

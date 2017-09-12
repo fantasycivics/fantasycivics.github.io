@@ -247,7 +247,7 @@ function getRosterRows(roster, aldMap, projMap) {
 			let score = scorer.getScore(points);
 			let proj = projMap[pid] || {};
 			let projBreakDown = scorer.getScoreBreakdown(proj);
-			let projPoints = scorer.getScorePoints(projBreakDown);
+			let projPoints = scorer.getScorePoints(projBreakDown, pos);
 			let projScore = scorer.getScore(projPoints);
 			return {
 				playerid: pid,
@@ -289,7 +289,7 @@ function renderRoster(roster, aldMap, projMap) {
 	let out = document.querySelector('#roster-table');
 		out.innerHTML = '';
 		out.appendChild(table);
-	let buttons = Array.from(table.querySelectorAll('button[data-playerid]'));
+	let buttons = Array.from(table.querySelectorAll('[data-playerid]'));
 	buttons.forEach((button) => {
 		button.addEventListener('click', (e) => {
 			let playerid = button.dataset.playerid;
@@ -305,8 +305,14 @@ function renderRoster(roster, aldMap, projMap) {
 					renderRoster(newRoster, aldMap, projMap);
 					break;
 				case 'view':
+					let isProjected = button.dataset.projected || false;
 					let player = PLAYER_MAP[playerid];
-					let data = aldMap[playerid] || {};
+					let data = {};
+					if (isProjected) {
+						data = projMap[playerid] || {};
+					} else {
+						data = aldMap[playerid] || {};
+					}
 					let breakdown = scorer.getScoreBreakdown(data);
 					let points = scorer.getScorePoints(breakdown, position);
 					let score = scorer.getScore(points);
