@@ -110,11 +110,11 @@ let sponsoredByMayor = (bill) => {
 }
 
 let voteURL = 'votes?organization__id=ocd-organization/ef168607-9135-4177-ad8e-c1f7a4806c3a'
-	voteURL += '&start_date__contains=2017-08'
+	voteURL += '&start_date__contains=2017-09'
 	voteURL += '&sort=start_date'
 
-let startOnPage = 1; // Total: 6 pages for July 2017 records, none for August 2017
-let endOnPage = 1;
+let startOnPage = 2; // Total: 6 pages for July 2017 records, none for August 2017
+let endOnPage = 2;
 
 getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
 
@@ -172,7 +172,7 @@ getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
 
 		console.log(`Found ${output.length} records.`);
 
-		saveOutput('august_test', output).then(done => {
+		saveOutput('sept_test_1', output).then(done => {
 			console.log(`Saved ${output.length} records to Firebase.`);
 		}).catch(console.error);
 

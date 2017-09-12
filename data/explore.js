@@ -12,8 +12,8 @@ let DatabaseFirebase = firebase.initializeApp(config, 'Fantasy Civics Scraper');
 let db = DatabaseFirebase.database();
 
 const TIME_RANGE = [
-	new Date('8/1/2017').getTime(),
-	new Date('9/1/2017').getTime()	
+	new Date('9/1/2017').getTime(),
+	new Date('10/1/2017').getTime()	
 ];
 
 const DATASETS_311 = [
@@ -98,7 +98,7 @@ function cleanAllData() {
 
 function cleanCityCouncilData(val) {
 	return new Promise((resolve, reject) => {
-		db.ref('july_test').once('value', (snap) => {
+		db.ref('sept_test_1').once('value', (snap) => {
 
 			let val = snap.val();
 

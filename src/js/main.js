@@ -32,11 +32,14 @@ let dStart = new Date(now.getUTCFullYear(), lastMonth).getTime();
 let dEnd = new Date(now.getUTCFullYear(), now.getUTCMonth()).getTime();
 let dProj = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1).getTime();
 
-const TIME_RANGE = [dStart, dEnd];
-const PROJECTION_RANGE = [dEnd, dProj];
+let pStart = new Date('9/1/2017').getTime();
+let pEnd = new Date('10/1/2017').getTime();
 
-console.log(TIME_RANGE)
-console.log(PROJECTION_RANGE)
+const TIME_RANGE = [dStart, dEnd];
+const PROJECTION_RANGE = [pStart, pEnd];
+
+console.log(new Date(TIME_RANGE[0]), new Date(TIME_RANGE[1]));
+console.log(new Date(PROJECTION_RANGE[0]), new Date(PROJECTION_RANGE[1]));
 
 const ROSTER_ORDER = ['captain', 'council1', 'council2', 'graffiti', 'rodents'];
 const POSITION_DETAILS = {
@@ -123,6 +126,15 @@ getPlayerNodes(TIME_RANGE).then((nodes) => {
 		main(nodes, projMap);
 	});
 }).catch(console.error);
+
+getPlayerNodes(PROJECTION_RANGE).then((projNodes) => {
+	console.log('projection nodes')
+	console.log(projNodes)
+	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
+		console.log('projection map')
+		console.log(projMap)
+	});
+});
 
 function main(nodes, projMap) {
 
