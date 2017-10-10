@@ -111,7 +111,7 @@ let getVoteDetails = (vote) => {
 		Promise.all(promises).then(details => {
 			resolve({
 				vote: details[0],
-				bill: details[1]
+				bill: detai`ls[1]
 			});
 		}).catch(reject);
 	});
@@ -126,7 +126,7 @@ let sponsoredByMayor = (bill) => {
 }
 
 let voteURL = 'votes?organization__id=ocd-organization/ef168607-9135-4177-ad8e-c1f7a4806c3a'
-	voteURL += '&start_date__contains=2017-09'
+	voteURL += '&start_date__contains=2017-10'
 	voteURL += '&sort=start_date'
 
 let startOnPage = 1; // Total: 6 pages for July 2017 records, none for August 2017
@@ -200,9 +200,9 @@ getOCDFull(voteURL, [startOnPage, endOnPage]).then(res => {
 		console.log(`Success on ${successCount} records.`);
 		console.log(`Errors on ${failureCount} records.`);
 
-		saveOutput('sept_test_2', output).then(done => {
+		/*saveOutput('oct1', output).then(done => {
 			console.log(`Saved ${output.length} records to Firebase.`);
-		}).catch(console.error);
+		}).catch(console.error);*/
 
 	}).catch((err) => {
 		console.error(`Error in Vote Details Promise.`);

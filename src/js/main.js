@@ -20,7 +20,7 @@ let PARAMS = getQueryParams(document.location.search);
 if (PARAMS.tab) {
 	showSection(PARAMS.tab);	
 }
-let ts = new Date('8/1/2017').getTime(); //Date.now();
+let ts = Date.now(); // new Date('9/1/2017').getTime();
 if (PARAMS.date) {
 	let dateParts = PARAMS.date.split('-');
 	ts = new Date(dateParts[1], parseInt(dateParts[0]) - 1).getTime();
@@ -32,8 +32,8 @@ let dStart = new Date(now.getUTCFullYear(), lastMonth).getTime();
 let dEnd = new Date(now.getUTCFullYear(), now.getUTCMonth()).getTime();
 let dProj = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1).getTime();
 
-let pStart = new Date('9/1/2017').getTime();
-let pEnd = new Date('10/1/2017').getTime();
+let pStart = dEnd; //new Date('9/1/2017').getTime();
+let pEnd = dProj; //new Date('10/1/2017').getTime();
 
 const TIME_RANGE = [dStart, dEnd];
 const PROJECTION_RANGE = [pStart, pEnd];
@@ -121,20 +121,28 @@ let lidx = Math.floor(Math.random() * LOADING_MESSAGES.length);
 loadingMessage.innerText = LOADING_MESSAGES[lidx] || 'Loading Fantasy Civics';
 document.body.classList.add('loading-body');
 
-/*getPlayerNodes(TIME_RANGE).then((nodes) => {
-	let aldMap = getPlayerDataMap(nodes);
-	getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
-		main(aldMap, projMap);
-	});
-}).catch(console.error);*/
-
 getPlayerNodes(TIME_RANGE).then((nodes) => {
+	let aldMap = getPlayerDataMap(nodes);
+
+	getPlayerNodes(PROJECTION_RANGE).then((projNodes) => {
+		let currMap = getPlayerDataMap(projNodes);
+		//console.log('nodes', currMap)
+		getPlayerProjections(PROJECTION_RANGE).then((projMap) => {
+			//console.log('proj', projMap)
+			let scoreMap = updateMapWithProjections(currMap, projMap);
+			//console.log('score', scoreMap)
+			main(aldMap, scoreMap);
+		});
+	});
+}).catch(console.error);
+
+/*getPlayerNodes(TIME_RANGE).then((nodes) => {
 	let aldMap = getPlayerDataMap(nodes);
 	getPlayerNodes(PROJECTION_RANGE).then((projNodes) => {
 		let projMap = getPlayerDataMap(projNodes);
 		main(aldMap, projMap);
 	});
-}).catch(console.error);
+}).catch(console.error);*/
 
 function main(aldMap, projMap) {
 
@@ -592,6 +600,20 @@ function getPlayerProjections(timeRange) {
 			resolve(aldMap);
 		}).catch(reject);
 	});
+}
+
+function updateMapWithProjections(currMap, projMap) {
+	let newMap = {};
+	for (let pid in projMap) {
+		newMap[pid] = currMap[pid] || {};
+		let proj = projMap[pid];
+		if (proj) {
+			for (let did in proj) {
+				newMap[pid][did] = proj[did];
+			}
+		}
+	}
+	return newMap;
 }
 
 function copyObject(obj) {

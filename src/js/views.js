@@ -7,7 +7,7 @@ let Views = () => {
 					<tr>
 						<th>Player</th>
 						<th>Ward</th>
-						<th>Projected</th>
+						<th>This Month</th>
 						<th>Last Month</th>
 						<th>Actions</th>
 					</tr>
@@ -110,7 +110,7 @@ let Views = () => {
 						<th>Position</th>
 						<th>Player</th>
 						<th>Ward</th>
-						<th>Projected</th>
+						<th>This Month</th>
 						<th>${model.lastMonth}</th>
 						<th>Actions</th>
 					</tr>
